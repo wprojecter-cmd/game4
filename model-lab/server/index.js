@@ -15,6 +15,31 @@ const DIST_DIR = path.join(ROOT, "dist");
 const PORT = Number(process.env.PORT || 4174);
 const PYTHON = process.env.PYTHON_BIN || (process.platform === "win32" ? "python" : "python3");
 
+function describeProgress(token) {
+  const [step, ...parts] = String(token || "").split("|");
+  const messages = {
+    "step:viewer": "Получаем данные публичного 3D-просмотра Sketchfab…",
+    "step:keys": "Подготавливаем данные для обработки геометрии…",
+    "step:keys_partial": "Получена часть параметров; продолжаем обработку…",
+    "step:legacy": "Обрабатываем формат модели…",
+    "step:mesh": "Скачиваем геометрию модели…",
+    "step:decrypt": "Обрабатываем геометрию…",
+    "step:textures": "Загружаем текстуры и материалы…",
+    "step:anim": "Проверяем анимационные данные…",
+    "step:convert": "Преобразуем модель в формат glTF…",
+    "step:preview": "Получаем изображение предпросмотра…",
+    "step:done": "Обработка модели завершена.",
+    "step:format": "Определён формат исходных данных: " + (parts[0] || "unknown"),
+    "step:model": "Модель: " + (parts[0] || "Sketchfab") + (parts[1] ? " · автор: " + parts[1] : ""),
+    "step:export": "Подготовлен файл модели: " + (parts[0] || "glTF"),
+    "step:anim_count": "Найдено анимационных клипов: " + (parts[0] || "0"),
+    "step:textures_warn": "Предупреждение при загрузке текстур: " + parts.join("|"),
+    "step:anim_warn": "Предупреждение при обработке анимации: " + parts.join("|"),
+    "step:convert_fail": "Один из способов преобразования не сработал; пробуем другой…"
+  };
+  return messages[step] || (step.startsWith("step:") ? "Этап: " + step.slice(5) : token);
+}
+
 app.use(express.json({ limit: "16kb" }));
 
 function sendEvent(res, payload) {
@@ -172,7 +197,7 @@ app.post("/api/import", async (req, res) => {
     const imported = await runImporter(
       sourceUrl,
       outputRoot,
-      (message) => log(message),
+      (message) => log(describeProgress(message)),
       (message) => log(message, "system")
     );
 
