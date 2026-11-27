@@ -316,7 +316,7 @@ export default function App() {
               {importing ? "ЗАГРУЗКА…" : "ИМПОРТИРОВАТЬ ↗"}
             </button>
           </form>
-          <div className="import-hint">Первый адаптер: публичные страницы Sketchfab с доступной загрузкой.</div>
+          <div className="import-hint">Публичные модели Sketchfab · импорт без API-токена.</div>
           <div className="terminal">
             <div className="terminal-head"><span><i /> IMPORT TERMINAL</span><small>{importing ? "RUNNING" : "IDLE"}</small></div>
             <div className="terminal-body" ref={terminalRef} aria-live="polite">
