@@ -74,6 +74,8 @@ function requireNotUsedCreateWriteStream(filePath) {
 }
 
 
+app.get("/health", (_req, res) => res.json({ ok: true, service: "model-lab" }));
+
 app.get("/api/models", async (_req, res) => {
   try {
     const entries = await fs.readdir(IMPORT_DIR, { withFileTypes: true });
@@ -163,7 +165,7 @@ app.post("/api/import", async (req, res) => {
 
 app.use("/models", express.static(path.join(PUBLIC_DIR, "models")));
 app.use(express.static(DIST_DIR));
-app.get("/", async (_req, res, next) => {
+app.get("*", async (_req, res, next) => {
   try { await fs.access(path.join(DIST_DIR, "index.html")); res.sendFile(path.join(DIST_DIR, "index.html")); }
   catch { next(); }
 });
