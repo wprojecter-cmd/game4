@@ -36,10 +36,8 @@ services:
     name: my-subscribers-model-lab
     runtime: node
     rootDir: model-lab
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install -r importer/requirements.txt && npm install && npm run build
+    startCommand: PYTHON_BIN=.venv/bin/python npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: SKETCHFAB_API_TOKEN
-        sync: false
