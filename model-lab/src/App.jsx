@@ -20,11 +20,11 @@ const MODELS = [
     id: "cesium-man",
     name: "Cesium Man",
     subtitle: "Тестовая модель Khronos glTF",
-    url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
-    author: "Ed Mackey / Cesium",
+    url: "/models/cesium-man.glb",
+    author: "Cesium",
     license: "CC BY 4.0",
-    credit: "Cesium Man — © Analytical Graphics, Inc.; conversion and asset credit: Ed Mackey. Creative Commons Attribution 4.0 International.",
-    source: "https://github.com/KhronosGroup/glTF-Sample-Assets",
+    credit: "© 2017 Cesium. Модель предоставлена Cesium for Everything. CC BY 4.0. Логотип и товарный знак Cesium не входят в лицензию модели.",
+    source: "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CesiumMan",
     scale: 1,
     normalize: true
   }
