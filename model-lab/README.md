@@ -28,7 +28,7 @@ Credit: **Ostankino Tower** by **Arslan Timkanov**, Sketchfab, **CC BY 4.0**. So
 
 ## Second public model
 
-The viewer also loads **Cesium Man** directly from the Khronos glTF Sample Assets repository. Credit: © Analytical Graphics, Inc.; glTF conversion/asset credit: Ed Mackey. **CC BY 4.0**. Source and license catalogue: https://github.com/KhronosGroup/glTF-Sample-Assets
+The viewer also includes **Cesium Man**, a local GLB from the Khronos glTF Sample Assets repository. Credit: © 2017 Cesium; provided by Cesium for Everything. **CC BY 4.0**. The Cesium logo/trademark is excluded from the model license. Model and license: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CesiumMan
 
 ## Render Static Site
 
