@@ -175,7 +175,7 @@ app.post("/api/import", async (req, res) => {
   res.flushHeaders?.();
 
   let disconnected = false;
-  req.on("close", () => { disconnected = true; });
+  res.on("close", () => { if (!res.writableEnded) disconnected = true; });
 
   const log = (message, level = "info") => {
     if (!disconnected) sendEvent(res, { type: "log", message, level });
