@@ -31,3 +31,14 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  - type: web
+    name: my-subscribers-model-lab
+    runtime: static
+    rootDir: model-lab
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
