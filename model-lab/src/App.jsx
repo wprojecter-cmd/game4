@@ -43,6 +43,33 @@ export default function App() {
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [modelInfo, setModelInfo] = useState(null);
+  const [models, setModels] = useState(MODELS);
+  const [modelUrl, setModelUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [terminalLines, setTerminalLines] = useState([
+    { type: "system", text: "MODEL LAB IMPORT CONSOLE / READY" },
+    { type: "system", text: "Ожидание ссылки на 3D-модель…" }
+  ]);
+  const terminalRef = useRef(null);
+
+  const addTerminalLine = (text, type = "info") => {
+    setTerminalLines((lines) => [...lines.slice(-79), { type, text }]);
+  };
+
+  useEffect(() => {
+    fetch("/api/models")
+      .then((response) => response.ok ? response.json() : [])
+      .then((items) => {
+        if (Array.isArray(items) && items.length) {
+          setModels((current) => [...MODELS, ...items.filter((item) => !current.some((m) => m.id === item.id))]);
+        }
+      })
+      .catch(() => addTerminalLine("Локальный импортёр пока не подключён.", "warn"));
+  }, []);
+
+  useEffect(() => {
+    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+  }, [terminalLines]);
 
   useEffect(() => {
     const host = mountRef.current;
@@ -125,7 +152,7 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
     const state = sceneRef.current;
-    const item = MODELS.find((m) => m.id === active);
+    const item = models.find((m) => m.id === active);
     if (!state || !item) return;
     setLoading(true);
     setError("");
@@ -195,7 +222,7 @@ export default function App() {
       }
     );
     return () => { cancelled = true; };
-  }, [active]);
+  }, [active, models]);
 
   useEffect(() => {
     modelRef.current?.traverse((obj) => {
@@ -205,7 +232,59 @@ export default function App() {
     });
   }, [wireframe]);
 
-  const selected = MODELS.find((m) => m.id === active);
+  const selected = models.find((m) => m.id === active);
+
+  async function importModel(event) {
+    event.preventDefault();
+    const url = modelUrl.trim();
+    if (!url || importing) return;
+    setImporting(true);
+    setError("");
+    addTerminalLine("$ model-import --url " + url, "command");
+    addTerminalLine("Подключение к локальному импортёру…");
+    try {
+      const response = await fetch("/api/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      if (!response.ok || !response.body) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Импортёр вернул HTTP " + response.status);
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let imported = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+        for (const block of events) {
+          const line = block.split("\n").find((part) => part.startsWith("data:"));
+          if (!line) continue;
+          const payload = JSON.parse(line.slice(5).trim());
+          if (payload.type === "log") addTerminalLine(payload.message, payload.level || "info");
+          if (payload.type === "done") imported = payload.model;
+          if (payload.type === "error") throw new Error(payload.message);
+        }
+      }
+      if (!imported) throw new Error("Сервер завершил импорт без данных модели.");
+      setModels((current) => [...current.filter((m) => m.id !== imported.id), imported]);
+      setActive(imported.id);
+      setModelUrl("");
+      addTerminalLine("Модель добавлена в пространство: " + imported.name, "success");
+      setStatus("Импорт завершён · загружаем модель в сцену");
+    } catch (err) {
+      addTerminalLine("ОШИБКА: " + err.message, "error");
+      setError(err.message);
+      setStatus("Ошибка импорта");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function resetCamera() {
     const state = sceneRef.current;
@@ -228,11 +307,29 @@ export default function App() {
         <div className="eyebrow">ASSET INSPECTOR / 001</div>
         <h1>3D пространство<span>.</span></h1>
         <p className="intro">Отдельная лаборатория для проверки загруженных 3D-моделей.</p>
-        <div className="section-label">МОДЕЛИ В ПРОСТРАНСТВЕ</div>
+        <div className="importer">
+          <div className="section-label">ИМПОРТ ПО ССЫЛКЕ</div>
+          <form className="import-form" onSubmit={importModel}>
+            <input type="url" value={modelUrl} onChange={(event) => setModelUrl(event.target.value)}
+              placeholder="https://sketchfab.com/3d-models/..." aria-label="Ссылка на страницу 3D-модели" disabled={importing} />
+            <button type="submit" disabled={importing || !modelUrl.trim()}>
+              {importing ? "ЗАГРУЗКА…" : "ИМПОРТИРОВАТЬ ↗"}
+            </button>
+          </form>
+          <div className="import-hint">Первый адаптер: публичные страницы Sketchfab с доступной загрузкой.</div>
+          <div className="terminal">
+            <div className="terminal-head"><span><i /> IMPORT TERMINAL</span><small>{importing ? "RUNNING" : "IDLE"}</small></div>
+            <div className="terminal-body" ref={terminalRef} aria-live="polite">
+              {terminalLines.map((line, index) => <div className={"terminal-line " + line.type} key={index}><span>{String(index + 1).padStart(2, "0")}</span>{line.text}</div>)}
+              {importing && <div className="terminal-cursor">▌</div>}
+            </div>
+          </div>
+        </div>
+        <div className="section-label models-heading">МОДЕЛИ В ПРОСТРАНСТВЕ</div>
         <div className="asset-list">
-          {MODELS.map((m, index) => (
+          {models.map((m, index) => (
             <button key={m.id} className={"asset " + (active === m.id ? "active" : "")} onClick={() => setActive(m.id)}>
-              <span className="asset-index">0{index + 1}</span>
+              <span className="asset-index">{String(index + 1).padStart(2, "0")}</span>
               <span className="asset-copy"><b>{m.name}</b><small>{m.subtitle}</small></span>
               <span className="asset-arrow">↗</span>
             </button>
