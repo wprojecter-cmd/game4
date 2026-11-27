@@ -109,7 +109,7 @@ export function spawnExplosionVfx(viewer, worldPosition, size) {
 
     // Tyrbo's simulation is Y-up; Cesium's local ENU frame is Z-up.
     // Rotate the effect group so gravity, debris and the ground plane align.
-    explosions.object.rotation.x = -Math.PI / 2;
+    explosions.object.rotation.x = Math.PI / 2;
     explosions.explode(new THREE.Vector3(0, 0, 0), size ?? (mobile ? 12 : 18));
 
     const enu = Transforms.eastNorthUpToFixedFrame(worldPosition);
