@@ -35,6 +35,7 @@ export default function App() {
   const sceneRef = useRef(null);
   const modelRef = useRef(null);
   const loaderRef = useRef(null);
+  const autoRotateRef = useRef(false);
   const [active, setActive] = useState("ostankino");
   const [status, setStatus] = useState("Подготовка 3D-сцены…");
   const [error, setError] = useState("");
@@ -99,7 +100,7 @@ export default function App() {
     let frame;
     const animate = () => {
       frame = requestAnimationFrame(animate);
-      controls.autoRotate = autoRotate;
+      controls.autoRotate = autoRotateRef.current;
       controls.autoRotateSpeed = 1.0;
       controls.update();
       renderer.render(scene, camera);
@@ -115,6 +116,10 @@ export default function App() {
       host.removeChild(renderer.domElement);
       sceneRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
   }, [autoRotate]);
 
   useEffect(() => {
