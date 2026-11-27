@@ -30,7 +30,7 @@ def main() -> int:
             emit({"type": "progress", "message": message})
 
         # The downloader's human-readable logs go to stderr. stdout stays JSONL.
-        with redirect_stdout(sys.stderr):
+        with redirect_stdout(io.StringIO()):
             result = download_one(url, out_root=output_root, progress=progress)
 
         model_dir = Path(result["dir"]).resolve()
