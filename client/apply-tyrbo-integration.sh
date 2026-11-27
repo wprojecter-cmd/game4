@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run from the GAME3 repository root in Codespaces.
-ZIP="${1:-tyrbo-explosion-effect.zip}"
+# Run from the GAME4 repository root in Codespaces.
+ZIP="${1:-client/tyrbo-explosion-effect.zip}"
 test -f "$ZIP" || { echo "Не найден архив: $ZIP"; exit 1; }
 test -f package.json && test -f client/package.json || {
-  echo "Запусти скрипт из корня репозитория GAME3."; exit 1;
+  echo "Запусти скрипт из корня репозитория GAME4."; exit 1;
 }
 
 mkdir -p client/src/effects
@@ -226,12 +226,12 @@ fs.writeFileSync("package.json", JSON.stringify(root, null, 2) + "\n");
 const client = JSON.parse(fs.readFileSync("client/package.json", "utf8"));
 client.dependencies = client.dependencies || {};
 delete client.dependencies["three-realistic-vfx"];
-client.dependencies.three = "^0.186.0";
+client.dependencies.three = "^0.172.0";
 fs.writeFileSync("client/package.json", JSON.stringify(client, null, 2) + "\n");
 NODE
 
-npm install
-npm run build -w client
+npm install --prefix client
+npm run build --prefix client
 
 echo
 echo "Готово: оригинальный Tyrbo Explosion подключён, сборка клиента прошла."
